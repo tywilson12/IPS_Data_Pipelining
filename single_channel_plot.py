@@ -4,42 +4,53 @@ import glob
 from tqdm import tqdm
 from functions.hdas_class import HDAS
 
-def plot_hdas_data(data, sample_rate=100, channel=1500):
- 
-    num_samples = len(data[1500])
+def plot_hdas_data(data, channel=1500, duration_seconds=600):
+    max_strain = 5000
+    min_strain = -5000
+    
+    sample_rate = 60000 / (10 * 60)  # samples per second
+    total_samples = int(sample_rate * duration_seconds)
+    
+    num_samples = len(data[channel])
+    
+    if total_samples > num_samples:
+        raise ValueError(f"The maximum available data length is {num_samples / sample_rate} seconds. Reduce the duration.")
 
-    x_axis_values1 = []
-    x_axis_values2 = []
+    # Denoise the data for the specified channel
+    for i in range(total_samples):
+        if data[channel][i] > max_strain or data[channel][i] < min_strain:
+            data[channel][i] = 0
 
-    for i in range(0, int(num_samples/30000) + 1):
-        x_axis_values1.append(i * 30000)
-        x_axis_values2.append(i * 5)                                                                                                                                                                                                               
-
+    # Generate time vector and labels
+    if duration_seconds > 60:
+        time_vector = np.linspace(0, duration_seconds / 60, total_samples)  # Time in minutes
+        time_label = 'Time (minutes)'
+    else:
+        time_vector = np.linspace(0, duration_seconds, total_samples)  # Time in seconds
+        time_label = 'Time (seconds)'
+    
     plt.figure(figsize=(15, 5))
-    plt.plot(data[1500], lw=0.1)
-    plt.xlabel('Time (minutes)')
+    plt.plot(time_vector, data[channel][:total_samples], lw=0.5)
+    plt.xlabel(time_label)
     plt.ylabel('Strain')
-    plt.title(f'Channel {channel} Strain Over Time')
-    plt.xticks(x_axis_values1,x_axis_values2)   
+    plt.title(f'Channel {channel} Strain Over {duration_seconds} Seconds')
     plt.grid(True)
-    plt.savefig("single_channel_plot.png")
+    print("saving plot...")
+    plt.savefig(f"single_channel_plot_{channel}_{duration_seconds}_seconds.png")
+    print("plot saved...")
     plt.show()
 
-def plot_hdas_from_file(file_path, num_channels=4992, sample_rate=100, channel=1500):
-
+def plot_hdas_from_file(file_path, channel=1500, duration_seconds=600):
     bins = np.sort(glob.glob(file_path))
 
     for i in tqdm(range(len(bins))):
-
         hdas_data = HDAS(bins[i], load=True)
-
         if i == 0:
             combined_data = hdas_data.Data
         else:
-            combined_data = np.concatenate((combined_data, hdas_data.Data), axis=1)  # concatenate along samples
+            combined_data = np.concatenate((combined_data, hdas_data.Data), axis=1)
 
-    # Plot the specified channel
-    plot_hdas_data(combined_data, sample_rate, channel)
+    plot_hdas_data(combined_data, channel, duration_seconds)
 
 # Example usage
-plot_hdas_from_file("AK_Data/2022_05_19_02*", channel=1500)
+plot_hdas_from_file("AK_Data/2022_05_19_02*", channel=1500, duration_seconds=60)
