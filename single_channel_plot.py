@@ -8,7 +8,7 @@ def plot_hdas_data(data, channel=1500, duration_seconds=600):
     max_strain = 5000
     min_strain = -5000
     
-    sample_rate = 60000 / (10 * 60)  # samples per second
+    sample_rate = 60000 / (10 * 60)
     total_samples = int(sample_rate * duration_seconds)
     
     num_samples = len(data[channel])
@@ -16,17 +16,15 @@ def plot_hdas_data(data, channel=1500, duration_seconds=600):
     if total_samples > num_samples:
         raise ValueError(f"The maximum available data length is {num_samples / sample_rate} seconds. Reduce the duration.")
 
-    # Denoise the data for the specified channel
     for i in range(total_samples):
         if data[channel][i] > max_strain or data[channel][i] < min_strain:
             data[channel][i] = 0
 
-    # Generate time vector and labels
     if duration_seconds > 60:
-        time_vector = np.linspace(0, duration_seconds / 60, total_samples)  # Time in minutes
+        time_vector = np.linspace(0, duration_seconds / 60, total_samples)
         time_label = 'Time (minutes)'
     else:
-        time_vector = np.linspace(0, duration_seconds, total_samples)  # Time in seconds
+        time_vector = np.linspace(0, duration_seconds, total_samples)
         time_label = 'Time (seconds)'
     
     plt.figure(figsize=(15, 5))
