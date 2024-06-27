@@ -6,14 +6,15 @@ from functions.hdas_class import HDAS
 import seaborn as sns
 import os
 
-""" 
+"""
 INSERT FILEPATH AND DURATION IN SECONDS BELOW
 """
 
 filepath = "AK_Data/2022_05_05_20*"
-duration_seconds = 10
+duration_seconds = 60
+starting_seconds = 780
 
-def plot_hdas_data_heatmap(data, duration_seconds):
+def plot_hdas_data_heatmap(data, duration_seconds, starting_seconds):
     strain_max = 5000
     strain_min = -5000
     high_strain_threshold = 1000
@@ -21,6 +22,7 @@ def plot_hdas_data_heatmap(data, duration_seconds):
 
     sampling_rate = 60000 / (10 * 60)
     total_samples = int(sampling_rate * duration_seconds)
+    sample_start = starting_seconds * 100
 
     if total_samples > len(data[0]):
         raise ValueError(f"The maximum available data length is {len(data[0]) / sampling_rate} seconds. Reduce the duration.")
@@ -28,12 +30,12 @@ def plot_hdas_data_heatmap(data, duration_seconds):
     num_channels = len(data)
 
     print("Denoising data...")
-    for i in tqdm(range(total_samples)):
-        for j in range(num_channels):
+    for i in tqdm(range(sample_start, (sample_start + (duration_seconds * 100)))):
+        for j in range(len(data)):
             if data[j][i] > strain_max or data[j][i] < strain_min:
                 data[j][i] = 0
 
-    heatmap_data = data[:, :total_samples]
+    heatmap_data = data[:, sample_start:(sample_start + (duration_seconds * 100))]
     # heatmap_data[np.abs(heatmap_data) < high_strain_threshold] = 0
 
     time_vector = np.linspace(0, duration_seconds, total_samples)
@@ -75,7 +77,7 @@ def plot_hdas_data_heatmap(data, duration_seconds):
         plt.savefig(output_filepath)
     print("Heatmap saved...")
 
-def plot_hdas_from_file(filepath, duration_seconds):
+def plot_hdas_from_file(filepath, duration_seconds, starting_seconds):
 
     bins = np.sort(glob.glob(filepath))
 
@@ -91,6 +93,6 @@ def plot_hdas_from_file(filepath, duration_seconds):
             else:
                 combined_data = np.concatenate((combined_data, hdas_data.Data), axis=1)
         
-        plot_hdas_data_heatmap(combined_data, duration_seconds)
+        plot_hdas_data_heatmap(combined_data, duration_seconds, starting_seconds)
 
-plot_hdas_from_file(filepath, duration_seconds)
+plot_hdas_from_file(filepath, duration_seconds, starting_seconds)
