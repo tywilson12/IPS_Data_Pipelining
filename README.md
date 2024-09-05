@@ -1,6 +1,6 @@
 **Welcome!**
 
-Visualizations discussed during our meetings can be found in the `outputs/display` folder.
+Visualizations discussed during our meetings can be found in the `output/display` folder.
 
 **Program descriptions:**
 
