@@ -238,7 +238,7 @@ def LoadData(fullPath: str) -> list:
     header_data = np.fromfile(fileID, dtype=dt, count=(fHeaderSize-1))
     if header_data[100] == 0 or header_data[100] == 1:
         RawData = True
-        LOGGER.info('Archivo tipo RawData')
+        LOGGER.info('File Type Raw Data')
 
     else:
         RawData = False
