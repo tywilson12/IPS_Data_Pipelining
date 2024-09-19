@@ -2,7 +2,9 @@
 
 Visualizations discussed during our meetings can be found in the `output/display` folder.
 
-Link to my UW-Madison Box with one file's worth of data in it: https://uwmadison.box.com/s/ah0lfjjc92ocsp4rtyr0o595q24bsucc
+Link to my UW-Madison Box with one file's worth of data in it: 
+
+https://uwmadison.box.com/s/ah0lfjjc92ocsp4rtyr0o595q24bsucc
 
 Link to the USGS data used as ground truth for seismic events https:
 
