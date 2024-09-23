@@ -33,9 +33,16 @@ def main():
     while True:
         latitude, longitude, speed = fetch_aurora_data()
         current_time = datetime.now(alaska_tz).strftime('%Y-%m-%d %H:%M:%S')
+
         write_data_to_csv([current_time, latitude, longitude, speed])
 
         time.sleep(60)
 
 if __name__ == "__main__":
-    main()
+
+    while True:
+        try:
+            main()
+        except:
+            print("Connection failed, retrying connection now...")
+            continue
