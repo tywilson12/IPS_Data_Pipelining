@@ -6,7 +6,6 @@ from tqdm import tqdm
 from functions.hdas_class import HDAS
 from functions.laser_denoising import *
 import seaborn as sns
-from scipy.ndimage import uniform_filter1d
 import os
 
 """
@@ -14,10 +13,10 @@ INSERT FILEPATH AND DURATION IN SECONDS BELOW
 """
 
 filepath = "AK_Data/2022_05_05_20*"
-duration_seconds = 180
-starting_seconds = 780
-freq_range = (0.5, 10)  # Frequency range for band-pass filter
-channel_range = None  # optional
+duration_seconds = 30
+starting_seconds = 825
+freq_range = (1, 10)  # Frequency range for band-pass filter
+channel_range = (500, 3000)  # optional
 decimation_factor = None
 
 def bandpass_filter(data, sampling_rate, freq_range, order=5):
@@ -35,18 +34,18 @@ def calculate_band_power_stft(data, sampling_rate, freq_range, nperseg=100):
         data = decimate(data, decimation_factor, axis=-1, zero_phase=True).astype(np.float32)
         sampling_rate = sampling_rate/decimation_factor
 
-    filtered_data = bandpass_filter(data, sampling_rate, freq_range)
+    data = bandpass_filter(data, sampling_rate, freq_range)
     
-    freqs, times, Zxx = stft(filtered_data, fs=sampling_rate, nperseg=nperseg, noverlap=nperseg//2)
+    freqs, times, Zxx = stft(data, fs=sampling_rate, nperseg=nperseg, noverlap=nperseg//2)
     
-    freq_indices = np.where((freqs >= freq_range[0]) & (freqs <= freq_range[1]))[0]
+    # freq_indices = np.where((freqs >= freq_range[0]) & (freqs <= freq_range[1]))[0]
     
-    band_power = np.sum(np.abs(Zxx[freq_indices, :]), axis=0)
+    band_power = np.sum(np.abs(Zxx[:, :]), axis=0)
     
     return band_power, times
 
 def plot_band_power_heatmap_stft(data, sampling_rate, duration_seconds, starting_seconds, freq_range, channel_range=None):
-    segment_length = 1  # Length of each segment in seconds
+    segment_length = 0.1  # Length of each segment in seconds for STFT
     segment_samples = int(segment_length * sampling_rate)
     sample_start = int(starting_seconds * sampling_rate)
     total_samples = int(sampling_rate * duration_seconds)
@@ -70,24 +69,30 @@ def plot_band_power_heatmap_stft(data, sampling_rate, duration_seconds, starting
 
     power_matrix = np.array(power_matrix)
 
+    num_segs_per_second = (1/times[1])*1
+
     if duration_seconds > 60:
-        times = times / 60.0
         time_label = 'Time (minutes)'
+        ticks_array = np.arange(0, (num_segs_per_second * duration_seconds) + 1, (num_segs_per_second * 30))
+        labels_array = np.arange(0, ((duration_seconds + 1)/ 60), 0.5)
+
     else:
         time_label = 'Time (seconds)'
+        ticks_array = np.arange(0, (num_segs_per_second * duration_seconds) + 1, num_segs_per_second)
+        labels_array = np.arange(0, duration_seconds + 1, 1)
 
     plt.figure(figsize=(12, 8))
-    vmin = np.percentile(power_matrix, 0)
-    vmax = np.percentile(power_matrix, 80)
+    vmin = np.percentile(power_matrix, 50)
+    vmax = np.percentile(power_matrix, 85)
 
-    sns.heatmap(power_matrix, cmap='Purples', cbar=True, xticklabels=int(sampling_rate * segment_length),
-                cbar_kws={'label': 'Power in Freq. Band'}, vmin=vmin, vmax=vmax)
+    sns.heatmap(power_matrix, cmap='Purples', cbar=True, xticklabels=labels_array, 
+                cbar_kws={'label': 'Power in Freq. Band (a.u.)'}, vmin=vmin, vmax=vmax)
 
     plt.xlabel(time_label)
     plt.ylabel('Channel')
-    plt.title(f'Power in {freq_range[0]}-{freq_range[1]} Hz Band (STFT)')
-    plt.xticks(ticks=np.arange(0, len(times), len(times)//(duration_seconds//60)), labels=np.round(times[np.arange(0, len(times), len(times)//(duration_seconds//60))], 2))
-    plt.yticks(ticks=np.arange(0, num_channels, 500), labels=np.arange(0, num_channels, 500))
+    plt.title(f'Total Magnitude in {freq_range[0]}-{freq_range[1]} Hz Band')
+    plt.yticks(ticks=np.arange(0, num_channels + 1, 500), labels=np.arange(channel_range[0], channel_range[1] + 1, 500))
+    plt.xticks(ticks=ticks_array, labels=labels_array)
     plt.gca().invert_yaxis()
 
     output_dir = "output"
