@@ -12,9 +12,9 @@ import os
 INSERT FILEPATH AND DURATION IN SECONDS BELOW
 """
 
-filepath = "AK_Data/2022_05_05_20*"
-duration_seconds = 30
-starting_seconds = 825
+filepath = "AK_Data/2022_05_08_04*"
+duration_seconds = 90
+starting_seconds = 390
 freq_range = (1, 10)  # Frequency range for band-pass filter
 channel_range = (500, 3000)  # optional
 decimation_factor = None
@@ -45,7 +45,7 @@ def calculate_band_power_stft(data, sampling_rate, freq_range, nperseg=100):
     return band_power, times
 
 def plot_band_power_heatmap_stft(data, sampling_rate, duration_seconds, starting_seconds, freq_range, channel_range=None):
-    segment_length = 0.1  # Length of each segment in seconds for STFT
+    segment_length = 0.5  # Length of each segment in seconds for STFT
     segment_samples = int(segment_length * sampling_rate)
     sample_start = int(starting_seconds * sampling_rate)
     total_samples = int(sampling_rate * duration_seconds)
@@ -82,7 +82,7 @@ def plot_band_power_heatmap_stft(data, sampling_rate, duration_seconds, starting
         labels_array = np.arange(0, duration_seconds + 1, 1)
 
     plt.figure(figsize=(12, 8))
-    vmin = np.percentile(power_matrix, 50)
+    vmin = np.percentile(power_matrix, 15)
     vmax = np.percentile(power_matrix, 85)
 
     sns.heatmap(power_matrix, cmap='Purples', cbar=True, xticklabels=labels_array, 

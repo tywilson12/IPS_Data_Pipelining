@@ -12,10 +12,10 @@ import os
 INSERT FILEPATH AND DURATION IN SECONDS BELOW
 """
 
-filepath = "AK_Data/2022_05_05_20*"
-duration_seconds = 30
-starting_seconds = 825
-freq_range = (2, 10)  # Frequency range for band-pass filter
+filepath = "AK_Data/2022_05_08_04*"
+duration_seconds = 90
+starting_seconds = 390
+freq_range = (1, 10)  # Frequency range for band-pass filter
 channel_range = (500, 3000)  # optional
 decimation_factor = None
 
@@ -53,8 +53,8 @@ def plot_band_power_heatmap_stft(data, sampling_rate, duration_seconds, starting
 
     if duration_seconds > 60:
         time_label = 'Time (minutes)'
-        ticks_array = np.arange(0, total_samples + 1, 100)
-        labels_array = np.arange(0, ((duration_seconds + 1)/ 60), 0.5)
+        ticks_array = np.arange(0, total_samples + 1, 3000)
+        labels_array = np.arange(0, (duration_seconds + 1 )/ 60, 0.5)
 
     else:
         time_label = 'Time (seconds)'
@@ -62,8 +62,8 @@ def plot_band_power_heatmap_stft(data, sampling_rate, duration_seconds, starting
         labels_array = np.arange(0, duration_seconds + 1, 1)
 
     plt.figure(figsize=(12, 8))
-    vmin = np.percentile(filtered_data, 25)
-    vmax = np.percentile(filtered_data, 90)
+    vmin = np.percentile(filtered_data, 15)
+    vmax = np.percentile(filtered_data, 85)
 
     sns.heatmap(filtered_data, cmap='Purples', cbar=True, xticklabels=labels_array, 
                 cbar_kws={'label': 'Strain Data Value Post Bandpass Filter'}, vmin=vmin, vmax=vmax)
