@@ -6,20 +6,21 @@ from tqdm import tqdm
 from functions.hdas_class import HDAS
 from functions.laser_denoising import *
 import seaborn as sns
+from matplotlib.colors import LinearSegmentedColormap
 import os
 
 """
 INSERT FILEPATH AND DURATION IN SECONDS BELOW
 """
 
-filepath = "AK_Data/2022_05_08_04*"
-duration_seconds = 90
-starting_seconds = 390
-freq_range = (1, 10)  # Frequency range for band-pass filter
-channel_range = (500, 3000)  # optional
+filepath = "AK_Data/2022_05_06_07h59*"
+duration_seconds = 600
+starting_seconds = 0
+freq_range = (1, 20)  # Frequency range for band-pass filter
+channel_range = (0, 1000)  # optional
 decimation_factor = None
 
-def bandpass_filter(data, sampling_rate, freq_range, order=5):
+def bandpass_filter(data, sampling_rate, freq_range, order=1):
 
     nyquist = 0.5 * sampling_rate
     low = freq_range[0] / nyquist
@@ -49,7 +50,7 @@ def plot_band_power_heatmap_stft(data, sampling_rate, duration_seconds, starting
         filtered_row = bandpass_filter(heatmap_data[channel_index],sampling_rate,freq_range)
         filtered_data.append(filtered_row)
 
-    filtered_data = np.array(filtered_data)
+    # filtered_data = bandpass_filter(heatmap_data, sampling_rate, freq_range)
 
     if duration_seconds > 60:
         time_label = 'Time (minutes)'
@@ -62,11 +63,17 @@ def plot_band_power_heatmap_stft(data, sampling_rate, duration_seconds, starting
         labels_array = np.arange(0, duration_seconds + 1, 1)
 
     plt.figure(figsize=(12, 8))
-    vmin = np.percentile(filtered_data, 15)
-    vmax = np.percentile(filtered_data, 85)
 
-    sns.heatmap(filtered_data, cmap='Purples', cbar=True, xticklabels=labels_array, 
-                cbar_kws={'label': 'Strain Data Value Post Bandpass Filter'}, vmin=vmin, vmax=vmax)
+    vmin = np.percentile(filtered_data, 40)
+    vmax = np.percentile(filtered_data, 90)
+
+    cmap = LinearSegmentedColormap.from_list("TealOrange", ["teal", "orange"])
+
+    # sns.heatmap(filtered_data, cmap='viridis', cbar=True, xticklabels=labels_array, 
+    #             cbar_kws={'label': 'Strain Data Value Post Bandpass Filter'}, vmin=vmin, vmax=vmax)
+
+    plt.imshow(filtered_data, cmap=cmap, aspect='auto', vmin=vmin, vmax=vmax)
+    plt.colorbar()    
 
     plt.xlabel(time_label)
     plt.ylabel('Channel')
