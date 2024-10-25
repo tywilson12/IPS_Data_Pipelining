@@ -130,4 +130,8 @@ for filename in tqdm(all_files):
             
             plot_band_power_heatmap_stft(combined_data, 60000 / (10 * 60), duration_seconds, starting_seconds, freq_range, channel_range)
 
+<<<<<<< HEAD
     plot_hdas_from_file(filepath, duration_seconds, starting_seconds, channel_range)
+=======
+    plot_hdas_from_file(filepath, duration_seconds, starting_seconds, channel_range)
+>>>>>>> 5c98c2c4665861561c78c8a89c8636c6ddecbb16
